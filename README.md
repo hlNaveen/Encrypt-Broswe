@@ -1,7 +1,3 @@
-another version of this project's link down below. 
-
-https://github.com/hlNaveen/webbrowserv2
-
 # Encrypt Browser
 
 A custom tabbed web browser built with Python and the PyQt6 framework, utilizing QtWebEngine for rendering web content. This project demonstrates various browser functionalities including tab management, navigation controls, user-configurable settings, and a security/privacy dialog.
@@ -74,3 +70,8 @@ Navigate to the directory containing the project files in your terminal and run:
 
 ```bash
 python main.py
+
+
+another version of this project's link down below. 
+
+https://github.com/hlNaveen/webbrowserv2
