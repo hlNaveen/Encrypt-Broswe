@@ -12,7 +12,7 @@ class SettingsDialog(QDialog): # For general browser preferences
         super().__init__(parent)
         self.setWindowTitle("Preferences")
         self.setMinimumWidth(380)
-        # self.setStyleSheet(parent.styleSheet() if parent else "") # Inherit main window style
+
 
         layout = QVBoxLayout(self)
         
@@ -68,10 +68,10 @@ class SecurityDialog(QDialog): # For security and privacy settings
         info_label.setObjectName("InfoLabel") 
         content_layout.addWidget(info_label)
 
-        self.checkboxes = {} # To store checkboxes for easier access: attr -> checkbox widget
+        self.checkboxes = {} 
 
         if self.page_settings:
-            # Attribute: (Display Text, Default State (if no current value), Tooltip)
+  
             settings_map = {
                 QWebEngineSettings.WebAttribute.JavascriptEnabled: ("Enable JavaScript", True, "Allows websites to run scripts."),
                 QWebEngineSettings.WebAttribute.LocalStorageEnabled: ("Enable Local Storage", True, "Allows websites to store data locally."),
@@ -166,16 +166,12 @@ class SecurityDialog(QDialog): # For security and privacy settings
                     settings_changed_count +=1
         
         if self.has_set_http_header and self.dnt_checkbox.isEnabled():
-            # Only modify header if the checkbox state implies a change from a hypothetical "default" (e.g., not sending DNT or DNT=0)
-            # This part is tricky without knowing the *actual current* header state.
-            # We assume if user interacts, they want to set it.
+
             if self.dnt_checkbox.isChecked():
                 self.profile.setHttpHeader(b"DNT", b"1") 
                 print("DNT header set to 1 for the profile.")
             else:
-                # To "unset" DNT, one might send DNT=0 or remove the header.
-                # QWebEngineProfile.setHttpHeader(b"DNT", b"") might remove it, or set it to empty.
-                # For simplicity, setting to "0" indicates user's preference against tracking.
+
                 self.profile.setHttpHeader(b"DNT", b"0") 
                 print("DNT header set to 0 for the profile.")
             settings_changed_count +=1 # Count DNT change as a setting change
