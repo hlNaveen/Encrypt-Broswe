@@ -1,9 +1,8 @@
-# ui_components.py
+
 from PyQt6.QtGui import QIcon, QPixmap, QColor
 from PyQt6.QtCore import QSize
 
-# --- SVG Icon Definitions ---
-# Main Application Icon (can be more detailed)
+
 APP_ICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#007aff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>"""
 
 BACK_ICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="14 18 8 12 14 6"></polyline></svg>"""
@@ -24,21 +23,21 @@ def create_icon_from_svg(svg_content: str, size: int = 16) -> QIcon:
     This size parameter is more for the QPixmap creation if SVG scaling is an issue.
     """
     try:
-        from PyQt6.QtCore import QByteArray # Local import to avoid circularity if this file is imported early
+        from PyQt6.QtCore import QByteArray 
         pixmap = QPixmap()
-        # Load SVG data into QPixmap. Qt should handle scaling.
+
         pixmap.loadFromData(QByteArray(svg_content.encode('utf-8')), 'svg')
         if pixmap.isNull():
-            # Fallback if SVG loading fails
+          
             print(f"Warning: SVG icon loading failed. Using placeholder for icon with size {size}x{size}.")
             placeholder_pixmap = QPixmap(QSize(size, size)) 
-            placeholder_pixmap.fill(QColor(200, 200, 200, 150)) # Semi-transparent gray
+            placeholder_pixmap.fill(QColor(200, 200, 200, 150)) 
             return QIcon(placeholder_pixmap)
         return QIcon(pixmap)
     except Exception as e:
         print(f"Error creating icon from SVG: {e}. Using placeholder.")
-        # Fallback for any other error
+      
         placeholder_pixmap = QPixmap(QSize(size, size))
-        placeholder_pixmap.fill(QColor(220, 220, 220, 100)) # Lighter semi-transparent gray
+        placeholder_pixmap.fill(QColor(220, 220, 220, 100))
         return QIcon(placeholder_pixmap)
 
