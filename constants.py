@@ -1,6 +1,4 @@
-# constants.py
 
-# --- Stylesheet (QSS) for Apple HIG Inspired Theme ---
 STYLESHEET = """
 QMainWindow { 
     background-color: #e8e8e8; /* Unified header color for the entire window background */
