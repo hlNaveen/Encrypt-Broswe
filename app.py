@@ -2,38 +2,30 @@ import sys
 import os
 from PyQt6.QtWidgets import QApplication, QSplashScreen
 from PyQt6.QtCore import Qt, QTimer
-from PyQt6.QtGui import QPixmap, QColor, QFont, QPainter, QFontMetrics, QIcon # Added QIcon for app icon
+from PyQt6.QtGui import QPixmap, QColor, QFont, QPainter, QFontMetrics, QIcon
 
-# Import the main window class from our new module
+
 from browser_window import WebBrowserWindow
-from ui_components import APP_ICON_SVG # For application icon
+from ui_components import APP_ICON_SVG 
 
 def main():
     """Main function to set up and run the browser application."""
 
-    # --- Environment and Application Attribute Setup ---
-    # These should be set BEFORE QApplication is instantiated.
-    # Attempt to force software rendering for ANGLE (used by Qt on Windows for OpenGL)
+    # Environment and Application Attribute Setup
+
     os.environ["QT_ANGLE_PLATFORM"] = "warp" 
-    # Fallback to disable GPU for QtWebEngine's underlying Chromium if issues persist
+
     os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu" 
-    # For better rendering on some systems, especially with software rendering
+
     QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseSoftwareOpenGL, True)
 
     app = QApplication(sys.argv)
-    app.setApplicationName("Python Web Browser")
-    app.setOrganizationName("GeminiCodeLabs")
+    app.setApplicationName("Encrypt Browser")
+    app.setOrganizationName("NaviCodeLabs")
     
-    # Set Application Icon
-    # Create a QIcon from SVG content (assuming create_icon_from_svg is in ui_components)
-    # For the app icon, it's better to use a QPixmap directly if create_icon_from_svg is not yet available
-    # or ensure ui_components is imported correctly.
-    # For simplicity, we'll assume APP_ICON_SVG is defined and create_icon_from_svg handles it.
-    # If create_icon_from_svg is in ui_components, it needs to be imported.
-    # Let's create a simple one here for the app icon for now.
     try:
-        from ui_components import create_icon_from_svg # Assuming it's there
-        app_icon = create_icon_from_svg(APP_ICON_SVG, size=64) # Larger size for app icon
+        from ui_components import create_icon_from_svg 
+        app_icon = create_icon_from_svg(APP_ICON_SVG, size=64) 
         app.setWindowIcon(app_icon)
     except ImportError:
         print("Warning: ui_components or create_icon_from_svg not found for app icon.")
@@ -41,11 +33,11 @@ def main():
         print(f"Error setting application icon: {e}")
 
 
-    # --- Splash Screen Creation ---
+    # Splash Screen Creation
     primary_screen = app.primaryScreen()
     if primary_screen:
         screen_geometry = primary_screen.geometry()
-        splash_width = min(500, screen_geometry.width() - 100) # Adjusted size
+        splash_width = min(500, screen_geometry.width() - 100) 
         splash_height = min(300, screen_geometry.height() - 100)
     else: 
         splash_width = 500
@@ -58,26 +50,25 @@ def main():
     painter.setRenderHint(QPainter.RenderHint.Antialiasing)
     painter.setPen(QColor("#005ecb"))
 
-    main_font = QFont("Arial", 20, QFont.Weight.Bold) # Adjusted font size
+    main_font = QFont("Arial", 20, QFont.Weight.Bold) 
     painter.setFont(main_font)
-    main_text = "Python Browser"
+    main_text = "Encrypt Browser"
     font_metrics_main = QFontMetrics(main_font)
     
-    # Calculate bounding rect for the main text to center it properly
-    # Using QRect for text drawing to handle alignment better
+    
     main_text_bounding_rect = font_metrics_main.boundingRect(QRect(0,0,splash_width - 20, splash_height // 2), Qt.AlignmentFlag.AlignCenter, main_text)
     
-    subtitle_font = QFont("Arial", 12, QFont.Weight.Normal) # Adjusted font size
+    subtitle_font = QFont("Arial", 12, QFont.Weight.Normal) 
     painter.setFont(subtitle_font)
     subtitle_text = "Initializing, please wait..."
     font_metrics_sub = QFontMetrics(subtitle_font)
     subtitle_bounding_rect = font_metrics_sub.boundingRect(QRect(0,0,splash_width - 20, splash_height // 2), Qt.AlignmentFlag.AlignCenter, subtitle_text)
 
-    total_text_height = main_text_bounding_rect.height() + subtitle_bounding_rect.height() + 15 # 15px spacing
+    total_text_height = main_text_bounding_rect.height() + subtitle_bounding_rect.height() + 15 
     
     main_text_y_offset = (splash_height - total_text_height) // 2
     
-    painter.setFont(main_font) # Reset for main text
+    painter.setFont(main_font) 
     main_text_draw_rect = QRect( (splash_width - main_text_bounding_rect.width()) // 2 , 
                                  main_text_y_offset, 
                                  main_text_bounding_rect.width(), 
@@ -85,7 +76,7 @@ def main():
     painter.drawText(main_text_draw_rect, Qt.AlignmentFlag.AlignCenter, main_text)
     
     subtitle_y_offset = main_text_y_offset + main_text_bounding_rect.height() + 15
-    painter.setFont(subtitle_font) # Reset for subtitle
+    painter.setFont(subtitle_font) 
     subtitle_draw_rect = QRect( (splash_width - subtitle_bounding_rect.width()) // 2,
                                 subtitle_y_offset,
                                 subtitle_bounding_rect.width(),
@@ -98,12 +89,11 @@ def main():
     splash.show()
     app.processEvents() 
     
-    # --- Main Window Creation and Startup ---
+    # Main Window Creation and Startup
     main_window = WebBrowserWindow() 
 
-    # Use QTimer for a controlled delay before showing the main window
-    # This makes the splash screen visible for a minimum duration
-    SPLASH_DURATION_MS = 2500 # 2.5 seconds
+
+    SPLASH_DURATION_MS = 2500 
     QTimer.singleShot(SPLASH_DURATION_MS, lambda: (main_window.show(), splash.finish(main_window)))
 
     try:
