@@ -1,148 +1,121 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QAction, QLineEdit, QToolBar, QDialog, QVBoxLayout, QLabel, QPushButton, QHBoxLayout, QCheckBox, QFileDialog
-from PyQt5.QtCore import QUrl, QSize
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
+import os
+from PyQt6.QtWidgets import QApplication, QSplashScreen
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QPixmap, QColor, QFont, QPainter, QFontMetrics, QIcon # Added QIcon for app icon
 
-class Browser(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
+# Import the main window class from our new module
+from browser_window import WebBrowserWindow
+from ui_components import APP_ICON_SVG # For application icon
 
-    def initUI(self):
-        self.browser = QWebEngineView()
-        self.browser.setUrl(QUrl('http://www.google.com'))
-        self.setCentralWidget(self.browser)
-        self.showMaximized()
+def main():
+    """Main function to set up and run the browser application."""
 
-        self.setupNavigationBar()
-        self.profile = QWebEngineProfile.defaultProfile()
+    # --- Environment and Application Attribute Setup ---
+    # These should be set BEFORE QApplication is instantiated.
+    # Attempt to force software rendering for ANGLE (used by Qt on Windows for OpenGL)
+    os.environ["QT_ANGLE_PLATFORM"] = "warp" 
+    # Fallback to disable GPU for QtWebEngine's underlying Chromium if issues persist
+    os.environ["QTWEBENGINE_CHROMIUM_FLAGS"] = "--disable-gpu" 
+    # For better rendering on some systems, especially with software rendering
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_UseSoftwareOpenGL, True)
 
-        # Connect downloadRequested signal to custom slot
-        self.browser.page().profile().downloadRequested.connect(self.downloadRequested)
-
-    def setupNavigationBar(self):
-        navbar = QToolBar('Navigation')
-        navbar.setIconSize(QSize(16, 16))
-        self.addToolBar(navbar)
-
-        actions = [
-            ("Back", self.browser.back),
-            ("Forward", self.browser.forward),
-            ("Reload", self.browser.reload),
-            ("Settings", self.openSettings)
-        ]
-
-        for text, action in actions:
-            btn = QAction(text, self)
-            btn.triggered.connect(action)
-            navbar.addAction(btn)
-
-        self.urlBar = QLineEdit()
-        self.urlBar.returnPressed.connect(self.navigate)
-        navbar.addWidget(self.urlBar)
-        self.browser.urlChanged.connect(self.updateUrl)
-
-    def navigate(self):
-        url = self.urlBar.text()
-        if not url.startswith('http://') and not url.startswith('https://'):
-            url = 'http://' + url
-        self.browser.setUrl(QUrl(url))
-
-    def updateUrl(self, q):
-        self.urlBar.setText(q.toString())
-
-    def openSettings(self):
-        dialog = SettingsDialog(self.profile, self)
-        dialog.exec_()
-
-    def downloadRequested(self, download):
-        options = QFileDialog.Options()
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save File", "", "All Files (*)", options=options)
-        if fileName:
-            download.setPath(fileName)
-            download.accept()
-
-class SettingsDialog(QDialog):
-    def __init__(self, profile, parent=None):
-        super().__init__(parent)
-        self.profile = profile
-        self.setWindowTitle('Settings')
-        self.setupUI()
-
-    def setupUI(self):
-        layout = QVBoxLayout(self)
-
-        homepageLabel = QLabel('Homepage URL:')
-        self.homepageEdit = QLineEdit()
-        self.homepageEdit.setText(self.profile.httpUserAgent())
-        layout.addWidget(homepageLabel)
-        layout.addWidget(self.homepageEdit)
-
-        clearDataLabel = QLabel('Clear Browsing Data:')
-        self.historyCheckbox = QCheckBox('History')
-        self.cookiesCheckbox = QCheckBox('Cookies')
-        self.cacheCheckbox = QCheckBox('Cache')
-        layout.addWidget(clearDataLabel)
-        layout.addWidget(self.historyCheckbox)
-        layout.addWidget(self.cookiesCheckbox)
-        layout.addWidget(self.cacheCheckbox)
-
-        saveButton = QPushButton('Save')
-        saveButton.clicked.connect(self.saveSettings)
-        closeButton = QPushButton('Close')
-        closeButton.clicked.connect(self.close)
-
-        buttonsLayout = QHBoxLayout()
-        buttonsLayout.addWidget(saveButton)
-        buttonsLayout.addWidget(closeButton)
-        layout.addLayout(buttonsLayout)
-
-        self.setStyleSheet("""
-            QDialog {
-                background-color: #f0f0f0;
-            }
-            QLabel {
-                color: #333;
-            }
-            QLineEdit, QCheckBox {
-                background-color: #fff;
-                border: 1px solid #ccc;
-                padding: 5px;
-                border-radius: 3px;
-            }
-            QPushButton {
-                background-color: #4CAF50;
-                border: none;
-                color: white;
-                padding: 10px 20px;
-                text-align: center;
-                text-decoration: none;
-                display: inline-block;
-                font-size: 16px;
-                margin: 4px 2px;
-                cursor: pointer;
-                border-radius: 5px;
-            }
-            QPushButton:hover {
-                background-color: #45a049;
-            }
-        """)
-
-    def saveSettings(self):
-        homepageUrl = self.homepageEdit.text()
-        self.profile.setHttpUserAgent(homepageUrl)
-
-        if self.historyCheckbox.isChecked():
-            self.profile.clearHistory()
-        if self.cookiesCheckbox.isChecked():
-            self.profile.cookieStore().deleteAllCookies()
-        if self.cacheCheckbox.isChecked():
-            self.profile.clearHttpCache()
-
-        self.close()
-
-if __name__ == '__main__':
     app = QApplication(sys.argv)
-    QApplication.setApplicationName('My Browser')
-    window = Browser()
-    sys.exit(app.exec_())
+    app.setApplicationName("Python Web Browser")
+    app.setOrganizationName("GeminiCodeLabs")
+    
+    # Set Application Icon
+    # Create a QIcon from SVG content (assuming create_icon_from_svg is in ui_components)
+    # For the app icon, it's better to use a QPixmap directly if create_icon_from_svg is not yet available
+    # or ensure ui_components is imported correctly.
+    # For simplicity, we'll assume APP_ICON_SVG is defined and create_icon_from_svg handles it.
+    # If create_icon_from_svg is in ui_components, it needs to be imported.
+    # Let's create a simple one here for the app icon for now.
+    try:
+        from ui_components import create_icon_from_svg # Assuming it's there
+        app_icon = create_icon_from_svg(APP_ICON_SVG, size=64) # Larger size for app icon
+        app.setWindowIcon(app_icon)
+    except ImportError:
+        print("Warning: ui_components or create_icon_from_svg not found for app icon.")
+    except Exception as e:
+        print(f"Error setting application icon: {e}")
+
+
+    # --- Splash Screen Creation ---
+    primary_screen = app.primaryScreen()
+    if primary_screen:
+        screen_geometry = primary_screen.geometry()
+        splash_width = min(500, screen_geometry.width() - 100) # Adjusted size
+        splash_height = min(300, screen_geometry.height() - 100)
+    else: 
+        splash_width = 500
+        splash_height = 300
+
+    splash_pixmap = QPixmap(splash_width, splash_height)
+    splash_pixmap.fill(QColor("#e8f0fe")) 
+
+    painter = QPainter(splash_pixmap)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setPen(QColor("#005ecb"))
+
+    main_font = QFont("Arial", 20, QFont.Weight.Bold) # Adjusted font size
+    painter.setFont(main_font)
+    main_text = "Python Browser"
+    font_metrics_main = QFontMetrics(main_font)
+    
+    # Calculate bounding rect for the main text to center it properly
+    # Using QRect for text drawing to handle alignment better
+    main_text_bounding_rect = font_metrics_main.boundingRect(QRect(0,0,splash_width - 20, splash_height // 2), Qt.AlignmentFlag.AlignCenter, main_text)
+    
+    subtitle_font = QFont("Arial", 12, QFont.Weight.Normal) # Adjusted font size
+    painter.setFont(subtitle_font)
+    subtitle_text = "Initializing, please wait..."
+    font_metrics_sub = QFontMetrics(subtitle_font)
+    subtitle_bounding_rect = font_metrics_sub.boundingRect(QRect(0,0,splash_width - 20, splash_height // 2), Qt.AlignmentFlag.AlignCenter, subtitle_text)
+
+    total_text_height = main_text_bounding_rect.height() + subtitle_bounding_rect.height() + 15 # 15px spacing
+    
+    main_text_y_offset = (splash_height - total_text_height) // 2
+    
+    painter.setFont(main_font) # Reset for main text
+    main_text_draw_rect = QRect( (splash_width - main_text_bounding_rect.width()) // 2 , 
+                                 main_text_y_offset, 
+                                 main_text_bounding_rect.width(), 
+                                 main_text_bounding_rect.height() )
+    painter.drawText(main_text_draw_rect, Qt.AlignmentFlag.AlignCenter, main_text)
+    
+    subtitle_y_offset = main_text_y_offset + main_text_bounding_rect.height() + 15
+    painter.setFont(subtitle_font) # Reset for subtitle
+    subtitle_draw_rect = QRect( (splash_width - subtitle_bounding_rect.width()) // 2,
+                                subtitle_y_offset,
+                                subtitle_bounding_rect.width(),
+                                subtitle_bounding_rect.height())
+    painter.drawText(subtitle_draw_rect, Qt.AlignmentFlag.AlignCenter, subtitle_text)
+    painter.end()
+
+    splash = QSplashScreen(splash_pixmap)
+    splash.setWindowFlags(Qt.WindowType.SplashScreen | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+    splash.show()
+    app.processEvents() 
+    
+    # --- Main Window Creation and Startup ---
+    main_window = WebBrowserWindow() 
+
+    # Use QTimer for a controlled delay before showing the main window
+    # This makes the splash screen visible for a minimum duration
+    SPLASH_DURATION_MS = 2500 # 2.5 seconds
+    QTimer.singleShot(SPLASH_DURATION_MS, lambda: (main_window.show(), splash.finish(main_window)))
+
+    try:
+        sys.exit(app.exec())
+    except KeyboardInterrupt:
+        print("Browser closed by user (KeyboardInterrupt).")
+        sys.exit(0)
+    except Exception as e:
+        print(f"An unexpected error occurred in main: {e}")
+        import traceback
+        traceback.print_exc() 
+        sys.exit(1)
+
+if __name__ == "__main__":
+    main()
